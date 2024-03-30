@@ -3,7 +3,7 @@ import pinecone
 import openai
 import streamlit as st
 
-openai.api_key = "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" ## find at platform.openai.com
+openai.api_key = "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" ## find at platform.openai.com
 pinecone_api_key = "d230654b-0530-4109-a7f8-d6d83d952e62"
 model = SentenceTransformer('all-MiniLM-L6-v2')
 # Initialize Pinecone

@@ -1,6 +1,7 @@
 streamlit
 streamlit_chat
 langchain
+langchain_openai
 sentence_transformers
 openai==0.28
 unstructured

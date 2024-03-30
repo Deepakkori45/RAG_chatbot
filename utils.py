@@ -7,39 +7,39 @@ openai.api_key = "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" ## find a
 pinecone_api_key = "d230654b-0530-4109-a7f8-d6d83d952e62"
 model = SentenceTransformer('all-MiniLM-L6-v2')
 # Initialize Pinecone
-from pinecone import Pinecone, ServerlessSpec
-pc = Pinecone(api_key=pinecone_api_key)
-index_name = 'chatbot' 
+# from pinecone import Pinecone, ServerlessSpec
+# pc = Pinecone(api_key=pinecone_api_key)
+# index_name = 'chatbot' 
 
-if index_name not in pc.list_indexes().names():
-    # Assuming the vector dimension of 'all-MiniLM-L6-v2' model embeddings
-    pc.create_index(
-        name=index_name,
-        dimension=384,
-        metric='cosine',
-        spec=ServerlessSpec(
-            cloud='gcp',  # or 'aws', based on where you created your Pinecone project
-            region='us-central1'  # Make sure this matches your project's region
-        )
-    )
+# if index_name not in pc.list_indexes().names():
+#     # Assuming the vector dimension of 'all-MiniLM-L6-v2' model embeddings
+#     pc.create_index(
+#         name=index_name,
+#         dimension=384,
+#         metric='cosine',
+#         spec=ServerlessSpec(
+#             cloud='gcp-starter',  # or 'aws', based on where you created your Pinecone project
+#             region='us-central1'  # Make sure this matches your project's region
+#         )
+#     )
 
-index = pc.Index(name=index_name)
+# index = pc.Index(name=index_name)
 
-# pinecone.init(api_key='d230654b-0530-4109-a7f8-d6d83d952e62', # find at app.pinecone.io
-#               environment='gcp-starter' # next to api key in console
-#              )
-# index = pinecone.Index('chatbot')
+pinecone.init(api_key='d230654b-0530-4109-a7f8-d6d83d952e62', # find at app.pinecone.io
+              environment='gcp-starter' # next to api key in console
+             )
+index = pinecone.Index('chatbot')
 
-# def find_match(input):
-#     input_em = model.encode(input).tolist()
-#     result = index.query(input_em, top_k=2, includeMetadata=True)
-#     return result['matches'][0]['metadata']['text']+"\n"+result['matches'][1]['metadata']['text']
-# def find_match(input):
-#     input_em = model.encode(input).tolist()
-#     result = index.query([input_em], top_k=2)
-#     # Construct a response based on the metadata of the matched results
-#     response_texts = [match['metadata']['text'] for match in result['matches'][0]]
-#     return "\n".join(response_texts)
+def find_match(input):
+    input_em = model.encode(input).tolist()
+    result = index.query(input_em, top_k=2, includeMetadata=True)
+    return result['matches'][0]['metadata']['text']+"\n"+result['matches'][1]['metadata']['text']
+def find_match(input):
+    input_em = model.encode(input).tolist()
+    result = index.query([input_em], top_k=2)
+    # Construct a response based on the metadata of the matched results
+    response_texts = [match['metadata']['text'] for match in result['matches'][0]]
+    return "\n".join(response_texts)
 
 def find_match(input):
     input_em = model.encode(input).tolist()

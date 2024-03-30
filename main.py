@@ -22,7 +22,7 @@ if 'requests' not in st.session_state:
     st.session_state['requests'] = []
 
 llm = ChatOpenAI(model_name="gpt-3.5-turbo", 
-openai_api_key="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")
+openai_api_key="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")
 
 if 'buffer_memory' not in st.session_state:
             st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)

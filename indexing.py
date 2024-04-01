@@ -32,7 +32,7 @@ pinecone.init(
     api_key="d230654b-0530-4109-a7f8-d6d83d952e62",  # find at app.pinecone.io
     environment="gcp-starter"  # next to api key in console
 )
-index_name = "langchain-chatbot"
+index_name = "chatbot"
 index = Pinecone.from_documents(docs, embeddings, index_name=index_name)
 
 

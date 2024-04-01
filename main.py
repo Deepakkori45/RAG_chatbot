@@ -80,6 +80,7 @@ from langchain.prompts import (
     ChatPromptTemplate,
     MessagesPlaceholder
 )
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 
 import streamlit as st
@@ -94,11 +95,13 @@ if 'responses' not in st.session_state:
 if 'requests' not in st.session_state:
     st.session_state['requests'] = []
 
-llm = ChatOpenAI(model_name="gpt-3.5-turbo", 
-openai_api_key="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")
+GOOGLE_API_KEY="AIzaSyC5jVGT9OHx4soEsliU60ByZsieobJPRms"
+llm = ChatGoogleGenerativeAI(model="gemini-pro",google_api_key=GOOGLE_API_KEY,
+                             temperature=0.2,convert_system_message_to_human=True)
 
 if 'key' not in st.session_state:
-            st.session_state.key=ConversationBufferMemory(k=3,return_messages=True)
+            # st.session_state.key=ConversationBufferMemory(k=3,return_messages=True)
+            st.session_state.key = ConversationBufferMemory()
 
 
 system_msg_template = SystemMessagePromptTemplate.from_template(template="""Answer the question as truthfully as possible using the provided context, 

@@ -6,3 +6,4 @@ openai==0.28
 unstructured
 unstructured[local-inference]
 pinecone-client
+langchain_google_genai

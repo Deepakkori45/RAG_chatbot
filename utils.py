@@ -2,7 +2,7 @@ from sentence_transformers import SentenceTransformer
 import pinecone
 import openai
 import streamlit as st
-
+from langchain_google_genai import ChatGoogleGenerativeAI
 # Initialize OpenAI and Pinecone with API keys
 GOOGLE_API_KEY = "AIzaSyC5jVGT9OHx4soEsliU60ByZsieobJPRms"
 pinecone_api_key = "d230654b-0530-4109-a7f8-d6d83d952e62"

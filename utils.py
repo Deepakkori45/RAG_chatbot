@@ -48,7 +48,7 @@ def query_refiner(conversation, query):
             {"role": "user", "content": f"{conversation}\n{query}"}
         ]
     )
-    return response.choices[0].message.content
+    return response
     # return response['choices'][0]['message']['content']
 
 # Function to get conversation string for Streamlit

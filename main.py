@@ -1,18 +1,12 @@
-
-from langchain_community.chat_models import ChatOpenAI
-# from langchain_openai import ChatOpenAI
-from langchain_community.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.chains import ConversationChain
-# from langchain.chains.conversation.memory import ConversationBufferWindowMemory
-from langchain.memory import ConversationBufferMemory
+from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain.prompts import (
     SystemMessagePromptTemplate,
     HumanMessagePromptTemplate,
     ChatPromptTemplate,
     MessagesPlaceholder
 )
-from langchain_google_genai import ChatGoogleGenerativeAI
-
 
 import streamlit as st
 from streamlit_chat import message
@@ -26,13 +20,11 @@ if 'responses' not in st.session_state:
 if 'requests' not in st.session_state:
     st.session_state['requests'] = []
 
-GOOGLE_API_KEY="AIzaSyC5jVGT9OHx4soEsliU60ByZsieobJPRms"
-llm = ChatGoogleGenerativeAI(model="gemini-pro",google_api_key=GOOGLE_API_KEY,
-                             temperature=0.2,convert_system_message_to_human=True)
+llm = ChatOpenAI(model_name="gpt-3.5-turbo", 
+openai_api_key="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") 
 
-if 'key' not in st.session_state:
-            # st.session_state.key=ConversationBufferMemory(k=3,return_messages=True)
-            st.session_state.key = ConversationBufferMemory()
+if 'buffer_memory' not in st.session_state:
+            st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)
 
 
 system_msg_template = SystemMessagePromptTemplate.from_template(template="""Answer the question as truthfully as possible using the provided context, 
@@ -43,8 +35,7 @@ human_msg_template = HumanMessagePromptTemplate.from_template(template="{input}"
 
 prompt_template = ChatPromptTemplate.from_messages([system_msg_template, MessagesPlaceholder(variable_name="history"), human_msg_template])
 
-conversation = ConversationChain(memory=st.session_state.key, prompt=prompt_template, llm=llm, verbose=True)
-
+conversation = ConversationChain(llm=llm, memory=st.session_state.buffer_memory, verbose=True, prompt=prompt_template)
 
 # container for chat history
 response_container = st.container()
@@ -73,4 +64,3 @@ with response_container:
             message(st.session_state['responses'][i],key=str(i))
             if i < len(st.session_state['requests']):
                 message(st.session_state["requests"][i], is_user=True,key=str(i)+ '_user')
-

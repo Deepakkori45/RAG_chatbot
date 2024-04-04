@@ -5,5 +5,5 @@ sentence_transformers
 openai==0.28
 unstructured
 unstructured[local-inference]
-pinecone-client
+pinecone-client==2.2.4
 langchain_google_genai

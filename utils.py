@@ -1,60 +1,66 @@
-from sentence_transformers import SentenceTransformer
-import pinecone
-import openai
+from langchain.chat_models import ChatOpenAI
+from langchain.chains import ConversationChain
+from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+from langchain.prompts import (
+    SystemMessagePromptTemplate,
+    HumanMessagePromptTemplate,
+    ChatPromptTemplate,
+    MessagesPlaceholder
+)
+
 import streamlit as st
-from langchain_google_genai import ChatGoogleGenerativeAI
-# Initialize OpenAI and Pinecone with API keys
-GOOGLE_API_KEY = "AIzaSyC5jVGT9OHx4soEsliU60ByZsieobJPRms"
-pinecone_api_key = "d230654b-0530-4109-a7f8-d6d83d952e62"
+from streamlit_chat import message
+from utils import *
 
-model = SentenceTransformer('all-MiniLM-L6-v2')
+st.title("Personal AI Bot")
 
-# Initialize Pinecone
-from pinecone import Pinecone, ServerlessSpec
+if 'responses' not in st.session_state:
+    st.session_state['responses'] = ["How can I assist you?"]
 
-pc = Pinecone(api_key=pinecone_api_key)
-index_name = 'chatbot'
+if 'requests' not in st.session_state:
+    st.session_state['requests'] = []
 
-# Ensure the Pinecone index exists
-if index_name not in pc.list_indexes().names():
-    pc.create_index(
-        name=index_name,
-        dimension=384,  # Dimension of the sentence transformer model embeddings
-        metric='cosine',
-        spec=ServerlessSpec(
-            cloud='gcp-starter',
-            region='us-central1'
-        )
-    )
+llm = ChatOpenAI(model_name="gpt-3.5-turbo", 
+openai_api_key="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") 
 
-index = pc.Index(name=index_name)
+if 'buffer_memory' not in st.session_state:
+            st.session_state.buffer_memory=ConversationBufferWindowMemory(k=3,return_messages=True)
 
-# Function to find matches in Pinecone index
-def find_match(input):
-    input_em = model.encode(input).tolist()
-    result = index.query(vector=input_em, top_k=2)
-    matches = result['matches']
-    
-    texts = [match['metadata']['text'] for match in matches if 'metadata' in match and 'text' in match['metadata']]
-    return "\n".join(texts) if texts else "No matches found."
 
-# Function to refine query using OpenAI
-def query_refiner(conversation, query):
-    response = ChatGoogleGenerativeAI(
-        model="gemini-pro",
-        google_api_key= GOOGLE_API_KEY,
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": f"{conversation}\n{query}"}
-        ]
-    )
-    return response
-    # return response['choices'][0]['message']['content']
+system_msg_template = SystemMessagePromptTemplate.from_template(template="""Answer the question as truthfully as possible using the provided context, 
+and if the answer is not contained within the text below, say 'I don't know'""")
 
-# Function to get conversation string for Streamlit
-def get_conversation_string():
-    conversation_string = ""
-    for i in range(len(st.session_state['responses']) - 1):
-        conversation_string += "Human: " + st.session_state['requests'][i] + "\n"
-        conversation_string += "Bot: " + st.session_state['responses'][i + 1] + "\n"
-    return conversation_string
+
+human_msg_template = HumanMessagePromptTemplate.from_template(template="{input}")
+
+prompt_template = ChatPromptTemplate.from_messages([system_msg_template, MessagesPlaceholder(variable_name="history"), human_msg_template])
+
+conversation = ConversationChain(llm=llm, memory=st.session_state.buffer_memory, verbose=True, prompt=prompt_template)
+
+# container for chat history
+response_container = st.container()
+# container for text box
+textcontainer = st.container()
+
+
+with textcontainer:
+    query = st.text_input("Query: ", key="input")
+    if query:
+        with st.spinner("typing..."):
+            conversation_string = get_conversation_string()
+            # st.code(conversation_string)
+            refined_query = query_refiner(conversation_string, query)
+            st.subheader("Refined Query:")
+            st.write(refined_query)
+            context = find_match(refined_query)
+            # print(context)  
+            response = conversation.predict(input=f"Context:\n {context} \n\n Query:\n{query}")
+        st.session_state.requests.append(query)
+        st.session_state.responses.append(response) 
+with response_container:
+    if st.session_state['responses']:
+
+        for i in range(len(st.session_state['responses'])):
+            message(st.session_state['responses'][i],key=str(i))
+            if i < len(st.session_state['requests']):
+                message(st.session_state["requests"][i], is_user=True,key=str(i)+ '_user')
